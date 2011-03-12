@@ -54,7 +54,7 @@ class adsb_rx_block (gr.top_block):
     self.args = args
 
     if options.filename is None:
-      self.u = uhd.single_usrp_source("", uhd.io_type_t.COMPLEX_FLOAT32)
+      self.u = uhd.usrp_source("", uhd.io_type_t.COMPLEX_FLOAT32,1)
 
       if(options.rx_subdev_spec is None):
         options.rx_subdev_spec = ""
@@ -63,10 +63,11 @@ class adsb_rx_block (gr.top_block):
       rate = options.rate
       self.u.set_samp_rate(rate)
       rate = int(self.u.get_samp_rate()) #retrieve actual
+      self.u.set_antenna("RX2",0)
 
       if options.gain is None: #set to halfway
         g = self.u.get_gain_range()
-        options.gain = (g.min+g.max) / 2.0
+        options.gain = (g.start()+g.stop()) / 2.0
 
       if not(self.tune(options.freq)):
         print "Failed to set initial frequency"
@@ -180,6 +181,7 @@ if __name__ == '__main__':
         while queue.empty_p() == 0 :
           msg = queue.delete_head() #blocking read
 
+          print msg.to_string()
           for out in outputs:
             out(msg.to_string())
 

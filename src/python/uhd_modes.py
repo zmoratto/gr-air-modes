@@ -19,20 +19,28 @@
 # Boston, MA 02110-1301, USA.
 # 
 
-my_position = [37.76225, -122.44254]
-
 from gnuradio import gr, gru, optfir, eng_notation, blks2, air
 from gnuradio import uhd
 from gnuradio.eng_option import eng_option
 from optparse import OptionParser
 import time, os, sys, threading
 from string import split, join
+
+# Hack to use install modules with out building a module.
+sys.path.append( os.path.realpath(__file__)[:-16]+"libexec")
+
+my_position = [37.76225, -122.44254]
+
 from usrpm import usrp_dbid
 from modes_print import modes_output_print
 from modes_sql import modes_output_sql
 from modes_sbs1 import modes_output_sbs1
 from modes_kml import modes_kml
 import gnuradio.gr.gr_threading as _threading
+
+def raw_parse(message):
+    [msgtype, shortdata, longdata, parity, ecc, reference] = message.split()
+    print (shortdata+","+longdata).upper()
 
 class top_block_runner(_threading.Thread):
     def __init__(self, tb):
@@ -143,6 +151,8 @@ if __name__ == '__main__':
                       help="open an SBS-1-compatible server on port 30003")
   parser.add_option("-n","--no-print", action="store_true", default=False,
                       help="disable printing decoded packets to stdout")
+  parser.add_option("--raw", action="store_true", default=False,
+                      help="prints raw values")
   (options, args) = parser.parse_args()
 
 
@@ -161,8 +171,11 @@ if __name__ == '__main__':
     sbs1port = modes_output_sbs1(my_position)
     outputs.append(sbs1port.output)
     updates.append(sbs1port.add_pending_conns)
-    
-  if options.no_print is not True:
+
+  if options.raw is True:
+      outputs.append(raw_parse)
+
+  if options.no_print is not True and len(outputs) == 0:
     outputs.append(modes_output_print(my_position).parse)
 
   fg = adsb_rx_block(options, args, queue)
@@ -181,7 +194,6 @@ if __name__ == '__main__':
         while queue.empty_p() == 0 :
           msg = queue.delete_head() #blocking read
 
-          print msg.to_string()
           for out in outputs:
             out(msg.to_string())
 

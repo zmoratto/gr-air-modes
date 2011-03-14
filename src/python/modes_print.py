@@ -126,21 +126,29 @@ class modes_output_print(modes_parse.modes_parse):
     icao24 = shortdata & 0xFFFFFF
     subtype = (longdata >> 51) & 0x1F;
 
-    retstr = None
+    retstr = "Type 17 (ES) "
 
-    if subtype == 4:
+    if subtype == 0:
+      retstr += "subtype 00 (no position) not implemented"
+    elif subtype == 1:
+      retstr += "subtype 01 (ident D) not implemented"
+    elif subtype == 2:
+      retstr += "subtype 02 (ident C) not implemented"
+    elif subtype == 3:
+      retstr += "subtype 03 (ident B) not implemented"
+    elif subtype == 4:
       msg = self.parseBDS08(shortdata, longdata, parity, ecc)
-      retstr = "Type 17 subtype 04 (ident) from " + "%x" % icao24 + " with data " + msg
+      retstr += "subtype 04 (ident A) from " + "%x" % icao24 + " with data " + msg
 
     elif subtype >= 5 and subtype <= 8:
       [altitude, decoded_lat, decoded_lon, rnge, bearing] = self.parseBDS06(shortdata, longdata, parity, ecc)
       if decoded_lat is not None:
-        retstr = "Type 17 subtype 06 (surface report) from " + "%x" % icao24 + " at (" + "%.6f" % decoded_lat + ", " + "%.6f" % decoded_lon + ") (" + "%.2f" % rnge + " @ " + "%.0f" % bearing + ")"
+        retstr += "subtype 06 (surface report) from " + "%x" % icao24 + " at (" + "%.6f" % decoded_lat + ", " + "%.6f" % decoded_lon + ") (" + "%.2f" % rnge + " @ " + "%.0f" % bearing + ")"
 
     elif subtype >= 9 and subtype <= 18:
       [altitude, decoded_lat, decoded_lon, rnge, bearing] = self.parseBDS05(shortdata, longdata, parity, ecc)
       if decoded_lat is not None:
-        retstr = "Type 17 subtype 05 (position report) from " + "%x" % icao24 + " at (" + "%.6f" % decoded_lat + ", " + "%.6f" % decoded_lon + ") (" + "%.2f" % rnge + " @ " + "%.0f" % bearing + ") at " + str(altitude) + "ft"
+        retstr += "subtype 05 (position report) from " + "%x" % icao24 + " at (" + "%.6f" % decoded_lat + ", " + "%.6f" % decoded_lon + ") (" + "%.2f" % rnge + " @ " + "%.0f" % bearing + ") at " + str(altitude) + "ft"
 
 #   this is a trigger to capture the bizarre BDS0,5 squitters you keep seeing on the map with latitudes all over the place
 #     if icao24 == 0xa1ede9:
@@ -150,15 +158,25 @@ class modes_output_print(modes_parse.modes_parse):
       subsubtype = (longdata >> 48) & 0x07
       if subsubtype == 0:
         [velocity, heading, vert_spd] = self.parseBDS09_0(shortdata, longdata, parity, ecc)
-        retstr = "Type 17 subtype 09-0 (track report) from " + "%x" % icao24 + " with velocity " + "%.0f" % velocity + "kt heading " + "%.0f" % heading + " VS " + "%.0f" % vert_spd
+        retstr += "subtype 09-0 (track report) from " + "%x" % icao24 + " with velocity " + "%.0f" % velocity + "kt heading " + "%.0f" % heading + " VS " + "%.0f" % vert_spd
 
       elif subsubtype == 1:
         [velocity, heading, vert_spd] = self.parseBDS09_1(shortdata, longdata, parity, ecc)
-        retstr = "Type 17 subtype 09-1 (track report) from " + "%x" % icao24 + " with velocity " + "%.0f" % velocity + "kt heading " + "%.0f" % heading + " VS " + "%.0f" % vert_spd
+        retstr += "subtype 09-1 (track report) from " + "%x" % icao24 + " with velocity " + "%.0f" % velocity + "kt heading " + "%.0f" % heading + " VS " + "%.0f" % vert_spd
 
       else:
-        retstr = "Type 17 subtype 09-%i" % (subsubtype) + " not implemented"
+        retstr += "subtype 09-%i" % (subsubtype) + " not implemented"
+    elif subtype >= 20 and subtype <= 22:
+      retstr += "subtype %02i (position report) not implemented" % subtype
+    elif subtype == 23:
+      retstr += "subtype 23 (reserved for test purposes) not implemented"
+    elif subtype == 24:
+      retstr += "subtype 24 (reserved for surface system status) not implemented"
+    elif subtype == 28:
+      retstr += "subtype 28 (aircraft emergency priority status) not implemented"
+    elif subtype == 31:
+      retstr += "subtype 31 (aircraft operational status) not implemented"
     else:
-      retstr = "Type 17 subtype " + str(subtype) + " not implemented"
+      retstr += "subtype %02i not implemented" % subtype
 
     return retstr

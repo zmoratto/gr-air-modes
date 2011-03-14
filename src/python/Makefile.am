@@ -21,6 +21,6 @@
 
 libexec_SCRIPTS = modes_kml.py modes_parse.py modes_print.py \
   modes_sbs1.py modes_sql.py altitude.py cpr.py
-bin_SCRIPTS = uhd_modes.py
+bin_SCRIPTS = uhd_modes.py sbs_stdout_decode.py
 
 include $(top_srcdir)/Makefile.common

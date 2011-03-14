@@ -40,7 +40,10 @@ import gnuradio.gr.gr_threading as _threading
 
 def raw_parse(message):
     [msgtype, shortdata, longdata, parity, ecc, reference] = message.split()
-    print (shortdata+","+longdata).upper()
+    if int(msgtype) < 12:
+        print (shortdata+","+parity).upper()
+    else:
+        print (shortdata+","+longdata+","+parity).upper()
 
 class top_block_runner(_threading.Thread):
     def __init__(self, tb):

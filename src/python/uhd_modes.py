@@ -178,7 +178,7 @@ if __name__ == '__main__':
   if options.raw is True:
       outputs.append(raw_parse)
 
-  if options.no_print is not True and len(outputs) == 0:
+  if options.no_print is not True:
     outputs.append(modes_output_print(my_position).parse)
 
   fg = adsb_rx_block(options, args, queue)
@@ -210,4 +210,6 @@ if __name__ == '__main__':
       runner = None
       if options.kml is not None:
           kmlgen.done = True
+      del outputs
+      del updates
       break

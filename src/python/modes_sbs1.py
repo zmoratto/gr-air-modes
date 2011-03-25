@@ -1,23 +1,23 @@
 #
 # Copyright 2010 Nick Foster
-# 
+#
 # This file is part of gr-air-modes
-# 
+#
 # gr-air-modes is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 3, or (at your option)
 # any later version.
-# 
+#
 # gr-air-modes is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with gr-air-modes; see the file COPYING.  If not, write to
 # the Free Software Foundation, Inc., 51 Franklin Street,
 # Boston, MA 02110-1301, USA.
-# 
+#
 
 
 import time, os, sys, socket
@@ -53,8 +53,9 @@ class modes_output_sbs1(modes_parse.modes_parse):
       pass
 
   def __del__(self):
+    print "Deleting open socket."
     self._s.close()
-            
+
   def parse(self, message):
     #assembles a SBS-1-style output string from the received message
     #this version ignores anything that isn't Type 17 for now, because we just don't care
@@ -65,19 +66,19 @@ class modes_output_sbs1(modes_parse.modes_parse):
     longdata = long(longdata, 16)
     parity = long(parity, 16)
     ecc = long(ecc, 16)
-#	reference = float(reference)
 
     msgtype = int(msgtype)
 
     outmsg = None
 
     if msgtype == 17:
-        outmsg = self.pp17(shortdata, longdata, parity, ecc)
+      print message
+      outmsg = self.pp17(shortdata, longdata, parity, ecc)
 
     return outmsg
 
   def pp17(self, shortdata, longdata, parity, ecc):
-    icao24 = shortdata & 0xFFFFFF	
+    icao24 = shortdata & 0xFFFFFF
     subtype = (longdata >> 51) & 0x1F
 
     retstr = None

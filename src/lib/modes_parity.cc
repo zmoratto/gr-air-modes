@@ -19,7 +19,9 @@
  * Boston, MA 02110-1301, USA.
  */
 
-//this is copied almost verbatim from Eric Cottrell's gr-air platform.
+// This is copied almost verbatim from Eric Cottrell's gr-air
+// platform. A potential source for this idea is:
+// http://www.eurocontrol.int/eec/gallery/content/public/document/eec/report/1994/022_CRC_calculations_for_Mode_S.pdf
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"

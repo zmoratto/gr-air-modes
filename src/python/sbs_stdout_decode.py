@@ -84,12 +84,14 @@ if __name__ == '__main__':
         blocks = line.strip().split(',')
         if not len(blocks) == 3:
             continue
+        print blocks[2]
         bstring = hex2bin(blocks[2])
         format = int(bstring[:5],2)
         short = blocks[2][:8]
         longm = ""
         parity = ""
-        ecc = "000000" # I don't know what this is
+        ecc = blocks[2][2:8] # possible mode S address?
+        print ecc
         reference = 0.001
         if len(blocks[2]) == 14:
             longm = "00000000000000"

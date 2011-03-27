@@ -27,6 +27,7 @@
 # - parse16
 # - parse17
 # - parse18
+# - parse19
 # - parse20
 # - parse21
 
@@ -135,6 +136,12 @@ class modes_parse:
   # Mode-S, message 18
   def parse18(self, shortdata, parity, ecc):
     cf = shortdata >> 24 & 0x07
+    icao24 = shortdata & 0xFFFFFF
+    return [cf, icao24]
+
+  # Mode-S, message 19
+  def parse19(self, shortdata, parity, ecc):
+    af = shortdata >> 24 & 0x07
     icao24 = shortdata & 0xFFFFFF
     return [cf, icao24]
 

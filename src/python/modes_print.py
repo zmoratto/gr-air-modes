@@ -56,6 +56,8 @@ class modes_output_print(modes_parse.modes_parse):
       output = self.print17(shortdata, longdata, parity, ecc)
     elif msgtype == 18:
       output = self.print18(shortdata, parity, ecc)
+    elif msgtype == 19:
+      output = self.print19(shortdata, parity, ecc)
     elif msgtype == 20:
       output = self.print20(shortdata, parity, ecc)
     elif msgtype == 21:
@@ -188,6 +190,13 @@ class modes_output_print(modes_parse.modes_parse):
   def print18(self, shortdata, parity, ecc):
     [cf, icao24] = self.parse18( shortdata, parity, ecc )
     return "Type 18 (ES / Non-Transponders) from %x" % icao24
+
+  def print19(self, shortdata, parity, ecc):
+    [af, icao24] = self.parse18( shortdata, parity, ecc )
+    retstr = "Type 19 (ES / Military Application) from %x" % icao24
+    if af == 0:
+      retstr += " w/ Extended Squitter"
+    return retstr
 
   def print20(self, shortdata, parity, ecc):
     [fs, dr, um, altitude] = self.parse20( shortdata, parity, ecc )

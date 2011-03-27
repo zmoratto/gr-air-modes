@@ -19,6 +19,16 @@
 # Boston, MA 02110-1301, USA.
 #
 
+# In this section you'll find:
+# - parse0
+# - parse4
+# - parse5
+# - parse11
+# - parse16
+# - parse17
+# - parse18
+# - parse20
+# - parse21
 
 import time, os, sys
 from string import split, join

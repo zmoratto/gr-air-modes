@@ -106,8 +106,7 @@ def cpr_resolve_global(evenpos, oddpos, mostrecent, surface): #ok this is consid
         highest_measure_value = float(2**nbits(surface))
 
         j = math.floor(((59*evenpos[0] - 60*oddpos[0])/highest_measure_value) + 0.5) #latitude index
-
-        #print "Latitude index: %i" % j #should be 6, getting 5?
+        print "Latitude index %i" % j
 
         rlateven = dlateven * (mod(j, 60)+evenpos[0]/highest_measure_value)
         rlatodd  = dlatodd  * (mod(j, 59)+ oddpos[0]/highest_measure_value)
@@ -179,16 +178,18 @@ def cpr_decode(my_location, icao24, encoded_lat, encoded_lon, cpr_format, evenli
                 # will fail if the even and odd frames are on opposite
                 # sides of a zone boundary
                 if decode_lat is None and icao24 in lkplist and lkplist[icao24][2] - time.time() < 10:
+                       print "Failed, trying emitter local"
                        [decoded_lat, decoded_lon] = cpr_resolve_local(lkplist[icao24][0:2], [encoded_lat, encoded_lon], cpr_format, surface)
                 else:
+                       print "Failed, trying local"
                        [decoded_lat, decoded_lon] = cpr_resolve_local(my_location, [encoded_lat, encoded_lon], cpr_format, surface)
                 lkplist[icao24] = [decoded_lat, decoded_lon, time.time()]
 
         elif icao24 in lkplist and lkplist[icao24][2] - time.time() < 10:
                print "emitter side"
-                #do emitter-centered local decoding
-                [decoded_lat, decoded_lon] = cpr_resolve_local(lkplist[icao24][0:2], [encoded_lat, encoded_lon], cpr_format, surface)
-                lkplist[icao24] = [decoded_lat, decoded_lon, time.time()] #update the local position for next time
+               #do emitter-centered local decoding
+               [decoded_lat, decoded_lon] = cpr_resolve_local(lkplist[icao24][0:2], [encoded_lat, encoded_lon], cpr_format, surface)
+               lkplist[icao24] = [decoded_lat, decoded_lon, time.time()] #update the local position for next time
 
         elif my_location is not None: #if we have a location, use it
                print "local side"

@@ -1,23 +1,23 @@
 #
 # Copyright 2010 Nick Foster
-# 
+#
 # This file is part of gr-air-modes
-# 
+#
 # gr-air-modes is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 3, or (at your option)
 # any later version.
-# 
+#
 # gr-air-modes is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with gr-air-modes; see the file COPYING.  If not, write to
 # the Free Software Foundation, Inc., 51 Franklin Street,
 # Boston, MA 02110-1301, USA.
-# 
+#
 
 
 import time, os, sys
@@ -27,8 +27,8 @@ import math
 
 class modes_output_print(modes_parse.modes_parse):
   def __init__(self, mypos):
-      modes_parse.modes_parse.__init__(self, mypos)
-      
+    modes_parse.modes_parse.__init__(self, mypos)
+
   def parse(self, message):
     [msgtype, shortdata, longdata, parity, ecc, reference, timestamp] = message.split()
     shortdata = long(shortdata, 16)
@@ -39,7 +39,7 @@ class modes_output_print(modes_parse.modes_parse):
     timestamp = float(timestamp)
 
     msgtype = int(msgtype)
-    
+
     output = None;
 
     if msgtype == 0:
@@ -56,17 +56,17 @@ class modes_output_print(modes_parse.modes_parse):
       output = "No handler for message type " + str(msgtype) + " from %x" % ecc
 
     if reference == 0.0:
-        refdb = -150.0
+      refdb = -150.0
     else:
-        refdb = 10.0*math.log10(reference)
-        
-    if output is not None: 
-        output = "(%.0f %f) " % (refdb, timestamp) + output
-        print output
+      refdb = 10.0*math.log10(reference)
+
+    if output is not None:
+      output = "(%.0f %f) " % (refdb, timestamp) + output
+      print output
 
   def print0(self, shortdata, parity, ecc):
     [vs, cc, sl, ri, altitude] = self.parse0(shortdata, parity, ecc)
-	
+
     retstr = "Type 0 (short A-A surveillance) from " + "%x" % ecc + " at " + str(altitude) + "ft"
     # the ri values below 9 are used for other things. might want to print those someday.
     if ri == 9:

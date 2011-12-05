@@ -20,8 +20,6 @@
 # 
 
 my_position = [37.76225, -122.44254]
-#my_position = [37.409066,-122.077836]
-#my_position = None
 
 from gnuradio import gr, gru, optfir, eng_notation, blks2, air
 from gnuradio import uhd
@@ -136,12 +134,13 @@ if __name__ == '__main__':
   parser.add_option("-n","--no-print", action="store_true", default=False,
                       help="disable printing decoded packets to stdout")
   parser.add_option("-l","--location", type="string", default=None,
-                      help="GPS coordinates of receiving station in format xx.xxxxx,xx.xxxxx")
+                      help="GPS coordinates of receiving station in format xx.xxxxx,xx.xxxxx (latlon)")
   (options, args) = parser.parse_args()
 
   if options.location is not None:
     reader = csv.reader([options.location])
-    my_position = reader.next()
+    latlon = reader.next();
+    my_position = [float(latlon[0]), float(latlon[0])]
 
   queue = gr.msg_queue()
   

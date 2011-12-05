@@ -170,27 +170,34 @@ def cpr_decode(my_location, icao24, encoded_lat, encoded_lon, cpr_format, evenli
         else:
                 validrange = 180
 
-        if icao24 in lkplist:
+        if ((icao24 in evenlist) and (icao24 in oddlist) and abs(evenlist[icao24][2] - oddlist[icao24][2]) < 10):
+                print "debug: valid even/odd positions, performing global decode."
+                newer = (oddlist[icao24][2] - evenlist[icao24][2]) > 0 #figure out which report is newer
+                [decoded_lat, decoded_lon] = cpr_resolve_global(evenlist[icao24][0:2], oddlist[icao24][0:2], newer, surface) #do a global decode
+
+                # Try local decoding if the above failed. The above
+                # will fail if the even and odd frames are on opposite
+                # sides of a zone boundary
+                if decode_lat is None and icao24 in lkplist and lkplist[icao24][2] - time.time() < 10:
+                       [decoded_lat, decoded_lon] = cpr_resolve_local(lkplist[icao24][0:2], [encoded_lat, encoded_lon], cpr_format, surface)
+                else:
+                       [decoded_lat, decoded_lon] = cpr_resolve_local(my_location, [encoded_lat, encoded_lon], cpr_format, surface)
+                lkplist[icao24] = [decoded_lat, decoded_lon, time.time()]
+
+        elif icao24 in lkplist and lkplist[icao24][2] - time.time() < 10:
+               print "emitter side"
                 #do emitter-centered local decoding
                 [decoded_lat, decoded_lon] = cpr_resolve_local(lkplist[icao24][0:2], [encoded_lat, encoded_lon], cpr_format, surface)
                 lkplist[icao24] = [decoded_lat, decoded_lon, time.time()] #update the local position for next time
 
-        elif ((icao24 in evenlist) and (icao24 in oddlist) and abs(evenlist[icao24][2] - oddlist[icao24][2]) < 10):
-                #               print "debug: valid even/odd positions, performing global decode."
-                newer = (oddlist[icao24][2] - evenlist[icao24][2]) > 0 #figure out which report is newer
-                [decoded_lat, decoded_lon] = cpr_resolve_global(evenlist[icao24][0:2], oddlist[icao24][0:2], newer, surface) #do a global decode
-                if decoded_lat is not None:
-                        lkplist[icao24] = [decoded_lat, decoded_lon, time.time()]
-
         elif my_location is not None: #if we have a location, use it
-                [local_lat, local_lon] = cpr_resolve_local(my_location, [encoded_lat, encoded_lon], cpr_format, surface) #try local decoding
-                [rnge, bearing] = range_bearing(my_location, [local_lat, local_lon])
-                if rnge < validrange: #if the local decoding can be guaranteed valid
-                        lkplist[icao24] = [local_lat, local_lon, time.time()] #update the local position for next time
-                        [decoded_lat, decoded_lon] = [local_lat, local_lon]
+               print "local side"
+               [local_lat, local_lon] = cpr_resolve_local(my_location, [encoded_lat, encoded_lon], cpr_format, surface) #try local decoding
+               [rnge, bearing] = range_bearing(my_location, [local_lat, local_lon])
+               if rnge < validrange: #if the local decoding can be guaranteed valid
+                      lkplist[icao24] = [local_lat, local_lon, time.time()] #update the local position for next time
+                      [decoded_lat, decoded_lon] = [local_lat, local_lon]
 
-
-        #print "settled on position: %.6f, %.6f" % (decoded_lat, decoded_lon,)
         if decoded_lat is not None:
                 [rnge, bearing] = range_bearing(my_location, [decoded_lat, decoded_lon])
         else:

@@ -29,11 +29,10 @@ import math, time
 latz = 15
 
 def nbits(surface):
-        return 17
-#       if surface == 1:
-#               return 19
-#       else:
-#               return 17
+       if surface == 1:
+               return 19
+       else:
+               return 17
 
 def nz(ctype):
         return 4 * latz - ctype
@@ -53,6 +52,7 @@ def dlat(ctype, surface):
 def nl_eo(declat_in, ctype):
         return nl(declat_in) - ctype
 
+# This should be a look up table for speed
 def nl(declat_in):
         return math.floor( (2.0*math.pi) * pow(math.acos(1.0- (1.0-math.cos(math.pi/(2.0*latz))) / pow( math.cos( (math.pi/180.0)*abs(declat_in) ) ,2.0) ),-1.0))
 
@@ -85,8 +85,6 @@ def decode_lon(declat, enclon, ctype, my_lon, surface):
 
 
 def mod(a, b):
-        if a < 0:
-                a += 360.0
         return a - b * math.floor(a / b)
 
 def cpr_resolve_local(my_location, encoded_location, ctype, surface):
@@ -102,51 +100,46 @@ def cpr_resolve_global(evenpos, oddpos, mostrecent, surface): #ok this is consid
         dlateven = dlat(0, surface);
         dlatodd  = dlat(1, surface);
 
-#       print dlateven;
-#       print dlatodd;
-
         evenpos = [float(evenpos[0]), float(evenpos[1])]
         oddpos = [float(oddpos[0]), float(oddpos[1])]
 
-        #print "Even position: %x, %x\nOdd position: %x, %x" % (evenpos[0], evenpos[1], oddpos[0], oddpos[1],)
+        highest_measure_value = float(2**nbits(surface))
 
-        j = math.floor(((59*evenpos[0] - 60*oddpos[0])/2**nbits(surface)) + 0.5) #latitude index
+        j = math.floor(((59*evenpos[0] - 60*oddpos[0])/highest_measure_value) + 0.5) #latitude index
 
         #print "Latitude index: %i" % j #should be 6, getting 5?
 
-        rlateven = dlateven * (mod(j, 60)+evenpos[0]/2**nbits(surface))
-        rlatodd  = dlatodd  * (mod(j, 59)+ oddpos[0]/2**nbits(surface))
+        rlateven = dlateven * (mod(j, 60)+evenpos[0]/highest_measure_value)
+        rlatodd  = dlatodd  * (mod(j, 59)+ oddpos[0]/highest_measure_value)
 
-        #print "Rlateven: %f\nRlatodd: %f" % (rlateven, rlatodd,)
+        # Southern hemisphere fix
+        if ( rlateven >= 270 ):
+                rlateven -= 360
+        if ( rlatodd  >= 270 ):
+                rlatodd  -= 360
 
+        # Nothing can be done about a boundary straddle, you should
+        # try a different method for decoding.
         if nl(rlateven) != nl(rlatodd):
                 #print "Boundary straddle!"
                 return (None, None,)
 
         if mostrecent == 0:
                 rlat = rlateven
-        else:
-                rlat = rlatodd
-
-        if rlat > 90:
-                rlat = rlat - 180.0
-
-        dl = dlon(rlat, mostrecent, surface)
-        nlthing = nl(rlat)
-        ni = nlthing - mostrecent
-
-        #print "ni is %i" % ni
-
-        m =  math.floor(((evenpos[1]*(nlthing-1)-oddpos[1]*(nlthing))/2**nbits(surface))+0.5) #longitude index, THIS LINE IS CORRECT
-        #print "m is %f" % m #should be -16
-
-
-        if mostrecent == 0:
                 enclon = evenpos[1]
         else:
+                rlat = rlatodd
                 enclon = oddpos[1]
 
-        rlon = dl * (mod(ni+m, ni)+enclon/2**nbits(surface))
+        dl = dlon(rlat, mostrecent, surface)
+
+        # Longitude index
+        nlthing = nl_eo(rlat,mostrecent)
+        m = math.floor((evenpos[1]*(nlthing-1)-oddpos[1]*nlthing)/highest_measure_value+0.5)
+
+        if nlthing < 1:
+                nlthing = 1
+        rlon = dl * (mod(m, nlthing)+enclon/highest_measure_value)
 
         if rlon > 180:
                 rlon = rlon - 360.0
